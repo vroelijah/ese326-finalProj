@@ -8,12 +8,13 @@ class Cell {
 	
 	const string name;
 	vector<int> currentPos = {};
+	const int area;
 
 
 public:
 
-	Cell(string& name) :name(name) {}
-	Cell(string& name, int &x, int& y) :name(name), currentPos({ x,y }) {}
+	Cell(string& name, int &area) :name(name), area(area) {}
+	Cell(string& name, int &x, int& y, const int &area) :name(name), currentPos({ x,y }), area(area) {}
 
 
 
