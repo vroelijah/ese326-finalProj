@@ -41,7 +41,6 @@ int main() {
     }
 
     int numRAndC = int(ceil(sqrt(counts[3])));
-    //cout << numRAndC << "\n";
     vector<vector<Cell>> PlacementGrid(numRAndC, vector<Cell>(numRAndC));
 
     while (getline(Cellfile, line))
@@ -51,7 +50,6 @@ int main() {
         int area;
         if (!(iss >> CellName>> area)) { break; } // error
         iss >> CellName >> area;
-       // cout << CellName << " " << area << endl;
         
         int x = random(0, numRAndC - 1), y(random(0, numRAndC - 1));
         int j = 0;
@@ -64,12 +62,6 @@ int main() {
         PlacementGrid[x][y]=newCell;
         CellCache.emplace(CellName,newCell);
     }
-    /*for (auto& list : PlacementGrid) {
-        for (auto& cell : list) {
-            cout << cell.getName() << " " << cell.getArea() << " ";
-        }
-        cout << endl;
-    }*/
 
     string netline,currentStartNode;
     while (getline(Netfile, netline)) {
@@ -94,10 +86,9 @@ int main() {
         }
         
     }
-   // netCache[currentStartNode].getNeighbors();
 
 
-
+    return 0;
 }
 
 
