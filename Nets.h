@@ -12,9 +12,11 @@ class Net {
 
 	 Cell startingCell;
 	 vector<Cell>neighborCells;
+	 /*string null = " ";
+	  int area = 0;*/
 
 public:
-	Net() :startingCell(Cell()) {}
+	Net() : startingCell(Cell()) {}
 	Net( Cell start,vector<Cell>neighbors) :startingCell(start), neighborCells(neighbors) {}
 
 	const string getNetStartCellName() {
@@ -30,5 +32,7 @@ public:
 			cout << neighbor.getName() << " ";
 		}
 	}
+
+	~Net() {}
 
 };

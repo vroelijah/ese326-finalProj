@@ -1,5 +1,4 @@
 #include "Cell.h"
-//#include "C:\Users\jumpy\source\repos\ese326-finalProj\Cell.h"
 #include "Nets.h"
 #include <vector>
 #include <string>
@@ -7,22 +6,44 @@
 #include <map>
 #include <sstream>
 #include <algorithm>
+#include <random>
 using namespace std;
-// header file contain all the functions of boost
-//#include <boost/algorithm/string.hpp>
+
 //Congestion- how many nets are within in a region.
 //
+random_device rd;
+mt19937 gen(rd());
+
+int random(const int low, const int high) {
+    uniform_int_distribution<>dist(low, high);
+    return dist(gen);
+}
 
 int main() {
-	vector<vector<Cell>> PlacementGrid;
-    vector<Cell>Initializer;
-    map<string, Cell>CellCache;
+	map<string, Cell>CellCache;
     map<string, Net>netCache;
+    vector<long>counts;
     
-    ifstream Cellfile("file.txt");
-    ifstream Netfile("netFile.txt");
+
+    
+    ifstream Cellfile("ibm01.txt");
+    ifstream Netfile("ibm01nets.txt");
 
     string line;
+
+    int i = 0;
+    while (i < 5) {
+        string num;
+        getline(Netfile,num);
+        counts.push_back(stol(num));
+        num.replace(num.find(num), num.length(), "");
+        i++;
+    }
+
+    int numRAndC = int(ceil(sqrt(counts[3])));
+    //cout << numRAndC << "\n";
+    vector<vector<Cell>> PlacementGrid(numRAndC, vector<Cell>(numRAndC));
+
     while (getline(Cellfile, line))
     {
         istringstream iss(line);
@@ -30,14 +51,29 @@ int main() {
         int area;
         if (!(iss >> CellName>> area)) { break; } // error
         iss >> CellName >> area;
-        cout << CellName << " " << area << "\n";
-        Cell newCell =  Cell(CellName, area);
-        Initializer.push_back(newCell);
-        CellCache.emplace(CellName, newCell);
+       // cout << CellName << " " << area << endl;
+        
+        int x = random(0, numRAndC - 1), y(random(0, numRAndC - 1));
+        int j = 0;
+        while (PlacementGrid[x][y].getName() != ""&&j<=numRAndC*numRAndC) {
+            x = random(0, numRAndC -1);
+            y = random(0, numRAndC -1);
+            j++;
+        }
+        Cell newCell = Cell(CellName,x,y,area);
+        PlacementGrid[x][y]=newCell;
+        CellCache.emplace(CellName,newCell);
     }
+    /*for (auto& list : PlacementGrid) {
+        for (auto& cell : list) {
+            cout << cell.getName() << " " << cell.getArea() << " ";
+        }
+        cout << endl;
+    }*/
 
     string netline,currentStartNode;
     while (getline(Netfile, netline)) {
+        if (netline == "")continue;
         size_t pos = netline.find('s');
         if (pos != string::npos) {
             string starterCellN = netline.substr(0, pos);
@@ -58,11 +94,13 @@ int main() {
         }
         
     }
-    
+   // netCache[currentStartNode].getNeighbors();
 
 
 
 }
+
+
 
 //int Cost (vector<int>old_place,vector<int>new_place){
 //
@@ -83,3 +121,5 @@ int main() {
 //void Perturb(vector<vector<Cell>>&grid) {
 //
 //}
+
+
