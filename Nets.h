@@ -26,11 +26,11 @@ public:
 		neighborCells.push_back(neighbor);
 	}
 
-	void getNeighbors() {
-		cout << startingCell.getName() << "\n";
-		for (auto neighbor : neighborCells) {
-			cout << neighbor.getName() << " ";
-		}
+	vector<Cell> getNeighbors() {
+		return this->neighborCells;
+	}
+	Cell getStartingCell() {
+		return this->startingCell;
 	}
 
 	~Net() {}
