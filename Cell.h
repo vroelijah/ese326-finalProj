@@ -9,8 +9,8 @@ private:
 	 string name;
 	vector<int> currentPos = {};
 	int area;
-	int x = 0;
-	int y = 0;
+	long x = 0;
+	long y = 0;
 
 
 public:
@@ -18,7 +18,7 @@ public:
 	Cell() :name(""),area(0) {}
 	Cell(const Cell& other) : name(other.name), currentPos(other.currentPos), area(other.area), x(other.x), y(other.y){}
 	Cell(const string& name,const int& area) :name(name), area(area), x(0), y(0) {}
-	Cell(const string& name, int& x, int& y,const int& area) :name(name), x(x), y(y), area(area) {}
+	Cell(const string& name, long& x, long& y,const int& area) :name(name), x(x), y(y), area(area) {}
 	//Cell(Cell&) = default;
 
 	//Functions
@@ -26,10 +26,10 @@ public:
 		return this->name;
 	}
 
-	int getX() {
+	long getX() {
 		return this->x;
 	}
-	int getY() {
+	long getY() {
 		return this->y;
 	}
 
@@ -37,10 +37,10 @@ public:
 		return this->area;
 	}
 
-	void setX(const int& x) {
+	void setX(const long& x) {
 		this->x = x;
 	}
-	void setY(const int& y) {
+	void setY(const long& y) {
 		this->y = y;
 
 	}
