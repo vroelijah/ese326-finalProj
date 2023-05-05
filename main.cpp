@@ -63,7 +63,7 @@ int main() {
     ifstream Netfile("ibm01nets.txt");
 
     string line;
-
+    
     int i = 0;
     while (i < 5) {
         string num;
