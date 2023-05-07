@@ -224,7 +224,7 @@ int main() {
         }
         Cell newCell = Cell(CellName,x,y,area);
         PlacementGrid[x][y]=newCell;
-        CellCache.emplace(CellName,newCell);
+        CellCache.emplace(CellName,&newCell);
     }
 
     //Nets Parsing
@@ -238,7 +238,7 @@ int main() {
 
             Cell startingCell = CellCache[starterCellN];
             Net newNet = Net(startingCell, {});
-            netCache.emplace(starterCellN, newNet);
+            netCache.emplace(starterCellN, &newNet);
 
             currentStartNode = starterCellN;
         }
