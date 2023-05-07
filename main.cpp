@@ -15,6 +15,8 @@ random_device rd;
 mt19937 gen(rd());
 
 constexpr int maxNum = INT_MAX;
+constexpr double Init_temp = 4000000;
+constexpr double finalTemp = .01;
 
 /// <summary>
 /// 
@@ -89,6 +91,7 @@ long cost2(vector<vector<Cell>>& PlacementGrid) {
             for (long k = 0; k < n; k++) {
                 const long m = PlacementGrid[k].size();
                 for (long l = k + 1; l < m; l++) {
+                    if (i == k && j == l) continue;
                     auto& cell1 = PlacementGrid[i][j];
                     auto& cell2 = PlacementGrid[k][l];
                     totalCost += overlap(cell1, cell2);
@@ -138,7 +141,43 @@ long Cost(map<string, Net>& nets, vector<vector<Cell>>& PlacementGrid) {
     cout << totalCost;
     return totalCost;
 }
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Placement"></param>
+/// <param name="numRAndC"></param>
+/// <returns></returns>
+vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC) {
+      vector<vector<Cell>>new_place(Placement);
+      int x(random(0, numRAndC - 1)), y(random(0, numRAndC - 1)), i(random(0, numRAndC - 1)), j(random(0, numRAndC - 1));
+      Cell& a1 = new_place[i][j];
+      Cell& a2 = new_place[x][y];
+      swap(a1,a2);
+      a1.setX(x);
+      a1.setY(y);
+      a2.setX(i);
+      a2.setY(j);
 
+    return new_place;
+}
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="temp"></param>
+void Schedule(double &temp) {
+    if (temp > Init_temp / 2)
+        temp = .8 * temp;
+    else
+        temp = .95 * temp;
+}
+bool inner_loop_crit(int &size) {
+    size -= 1;
+    if (size == 0) {
+        return true;
+    }
+    return false;
+}
 /// <summary>
 /// 
 /// </summary>
@@ -164,7 +203,7 @@ int main() {
         i++;
     }
 
-    int numRAndC = int(ceil(sqrt(counts[3])));
+    const int numRAndC = int(ceil(sqrt(counts[3])));
     vector<vector<Cell>> PlacementGrid(numRAndC, vector<Cell>(numRAndC));
 
     //Initial Placements and File parsing
@@ -214,23 +253,25 @@ int main() {
     }
     //Start of actual Algorithm and Peicing it all together
 
-    Cost(netCache, PlacementGrid);
+    double temp = Init_temp;
+    while (temp > finalTemp) {
+        int size = CellCache.size();
+        while (inner_loop_crit(size) == false) {
+            vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC);
+            long NetCost = Cost(netCache, PlacementGrid) - Cost(netCache, new_place);
+            if (NetCost < 0)
+                PlacementGrid = new_place;
+            else if (random(0, 1) > exp(NetCost / temp))
+                PlacementGrid = new_place;
+        }
+        Schedule(temp);
+    }
+    
     
     
 
     return 0;
 }
 
-
-
-
-
-//
-//int changeTemp(int& temp) {
-//
-//}
-//void Perturb(vector<vector<Cell>>&grid) {
-//
-//}
 
 
