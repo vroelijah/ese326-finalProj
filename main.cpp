@@ -50,10 +50,6 @@ long cost1(map<string,Net>& nets) {
             min_x = min(min_x, neighbor.getX());
             min_y = min(min_y, neighbor.getY());
             yweight += neighbor.getArea();
-           /* cout << max_x << " " << max_y << " " << endl;
-            cout << min_x << " " << min_y << " " << endl;
-            cout << endl;
-            cout << endl;*/
             
         }
         totalNetCost = abs(((max_x - min_x))) + abs(((max_y - min_y)));
@@ -189,10 +185,12 @@ vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC
 /// </summary>
 /// <param name="temp"></param>
 void Schedule(double &temp) {
-    if (temp > Init_temp / 2)
+    if (temp >= Init_temp / 2)
         temp = .8 * temp;
-    else
+    else if (temp > Init_temp / 4 && temp < Init_temp / 2)
         temp = .95 * temp;
+    else
+        temp = .8 * temp;
 }
 bool inner_loop_crit(int &size) {
     size -= 1;
@@ -208,6 +206,8 @@ bool inner_loop_crit(int &size) {
 int main() {
 	map<string, Cell>CellCache;
     map<string, Net>netCache;
+    map<string, Cell>CellCacheCopy;
+    map<string, Net>netCacheCopy;
     vector<long>counts;
    
     
@@ -275,37 +275,50 @@ int main() {
         }
         
     }
-   
+    CellCacheCopy = CellCache;
+    netCacheCopy = netCache;
     //Start of actual Algorithm and Peicing it all together
-    cost1(netCache);
-    int t = 100;
+    /*cost1(netCacheCopy);
+    cost3(PlacementGrid);
+    int t = 100;*/
     //cost2(PlacementGrid);
     //cost3(PlacementGrid);
-    while (t > 0) {
-        
-        //swap(PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)], PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)]);
-        vector<vector<Cell>> new_place = Perturb(PlacementGrid, numRAndC,CellCache,netCache);
-        //cost2(new_place);
-        //cost3(new_place);
-        cost1(netCache);
-        cout << "END OF ITERATION ----------------- END OF ITERATION" << endl;
-        t--;
-    }
+    //while (t > 0) {
+    //    
+    //    //swap(PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)], PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)]);
+    //    vector<vector<Cell>> new_place = Perturb(PlacementGrid, numRAndC,CellCacheCopy,netCacheCopy);
+    //    //cost2(new_place);
+    //    cost3(new_place);
+    //    cost1(netCacheCopy);
+    //    cout << "END OF ITERATION ----------------- END OF ITERATION" << endl;
+    //    t--;
+    //}
     ;
    // when swapping 2 places, also change in the map the values of x and y.
-    /*double temp = Init_temp;
+    //ok so get initial cost 1-4
+    //then its(curcost1 / initcost1) + (curcost2 / initcost2)...
+    double temp = Init_temp;
     while (temp > finalTemp) {
-        int size = CellCache.size()/2;
+        int size = CellCache.size()/3;
         while (inner_loop_crit(size) == false) {
-            vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC);
-            long NetCost = Cost(netCache, PlacementGrid) - Cost(netCache, new_place);
-            if (NetCost < 0)
+            vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC,CellCacheCopy,netCacheCopy);
+           //long InitialCost = Cost();
+            long initCost1(cost1(netCache)), initCost2(cost2(PlacementGrid)), initCost3(cost3(PlacementGrid)), initCost(Cost(netCache, PlacementGrid));
+            long Cost1(cost1(netCacheCopy)), Cost2(cost2(new_place)), Cost3(cost3(new_place)), Costt(Cost(netCacheCopy, new_place));
+            long NetCost = (initCost1 / Cost1) + (initCost2 / Cost2) + (initCost3 / Cost3) ;
+            if (NetCost < 0) {
                 PlacementGrid = new_place;
-            else if (random(0, 1) > exp(NetCost / temp))
+                netCache = netCacheCopy;
+                CellCache = CellCacheCopy;
+            }
+            else if (random(0, 1) > exp(NetCost / temp)) {
                 PlacementGrid = new_place;
+                netCache = netCacheCopy;
+                CellCache = CellCacheCopy;
+            }
         }
         Schedule(temp);
-    }*/
+    }
     
     
     
