@@ -54,6 +54,14 @@ public:
 		}
 	}
 
+	/*Cell& operator=(const Cell& a) {
+		name = a.name;
+		currentPos = a.currentPos;
+		area = a.area;
+		x = a.x;
+		y = a.y;
+		return *this;
+	}*/
 	Cell& operator=(const Cell& a) {
 		name = a.name;
 		currentPos = a.currentPos;
@@ -62,6 +70,10 @@ public:
 		y = a.y;
 		return *this;
 	}
+	bool operator== (const Cell& other) const {
+		return name == other.name && currentPos == other.currentPos && area == other.area && x == other.x && y == other.y;
+	}
+
 
 
 	~Cell() {}

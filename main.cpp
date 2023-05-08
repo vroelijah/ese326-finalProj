@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <random>
 #include <numeric>
+#include <memory>
 using namespace std;
 
 //Congestion- how many nets are within in a region.
@@ -34,7 +35,7 @@ long random(const long low, const long high) {
 /// </summary>
 /// <param name="nets"></param>
 /// <returns></returns>
-long cost1(map<string, Net>& nets) {
+long cost1(map<string,Net>& nets) {
     
     long totalCost = 0;
     long totalNetCost = 0;
@@ -49,10 +50,13 @@ long cost1(map<string, Net>& nets) {
             min_x = min(min_x, neighbor.getX());
             min_y = min(min_y, neighbor.getY());
             yweight += neighbor.getArea();
-           
+           /* cout << max_x << " " << max_y << " " << endl;
+            cout << min_x << " " << min_y << " " << endl;
+            cout << endl;
+            cout << endl;*/
             
         }
-        totalNetCost = ((max_x - min_x)) + ((max_y - min_y));
+        totalNetCost = abs(((max_x - min_x))) + abs(((max_y - min_y)));
         
         totalCost += totalNetCost;
     }
@@ -104,13 +108,13 @@ long cost2(vector<vector<Cell>>& PlacementGrid) {
     return totalCost;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="PlacementGrid"></param>
-/// <returns></returns>
-long cost3(vector<vector<Cell>>& PlacementGrid) {
-    long totalCost3(0), rowCost(0), maxRowCost(0), minRowCost(0);
+///// <summary>
+///// 
+///// </summary>
+///// <param name="PlacementGrid"></param>
+///// <returns></returns>
+long cost3(vector<vector<Cell>> PlacementGrid) {
+    long totalCost3(0), rowCost(0), maxRowCost(0), minRowCost(maxNum);
 
     for (auto& row : PlacementGrid) {
         rowCost = 0;
@@ -122,17 +126,17 @@ long cost3(vector<vector<Cell>>& PlacementGrid) {
         minRowCost = min(minRowCost, rowCost);
         totalCost3 += rowCost;
     }
-    cout << (maxRowCost - minRowCost) / 2 << endl;
+    cout << (maxRowCost - minRowCost)  << endl;
     return (maxRowCost - minRowCost) / 2;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="nets"></param>
-/// <param name="PlacementGrid"></param>
-/// <returns></returns>
-long Cost(map<string, Net>& nets, vector<vector<Cell>>& PlacementGrid) {
+///// <summary>
+///// 
+///// </summary>
+///// <param name="nets"></param>
+///// <param name="PlacementGrid"></param>
+///// <returns></returns>
+long Cost(map<string,Net>& nets, vector<vector<Cell>>& PlacementGrid) {
     long totalCost = 0;
 
     totalCost += cost1(nets);
@@ -141,22 +145,41 @@ long Cost(map<string, Net>& nets, vector<vector<Cell>>& PlacementGrid) {
     cout << totalCost;
     return totalCost;
 }
-/// <summary>
-/// 
-/// </summary>
-/// <param name="Placement"></param>
-/// <param name="numRAndC"></param>
-/// <returns></returns>
-vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC) {
+///// <summary>
+///// 
+///// </summary>
+///// <param name="Placement"></param>
+///// <param name="numRAndC"></param>
+///// <returns></returns>
+vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC, map<string,Cell>&CellCache,map<string,Net>&netCache) {
       vector<vector<Cell>>new_place(Placement);
       int x(random(0, numRAndC - 1)), y(random(0, numRAndC - 1)), i(random(0, numRAndC - 1)), j(random(0, numRAndC - 1));
-      Cell& a1 = new_place[i][j];
-      Cell& a2 = new_place[x][y];
-      swap(a1,a2);
-      a1.setX(x);
-      a1.setY(y);
-      a2.setX(i);
-      a2.setY(j);
+     
+      swap(new_place[i][j], new_place[x][y]);
+      Cell& A = Placement[i][j];
+      Cell& B = Placement[x][y];
+      CellCache[A.getName()].setX(x);
+      CellCache[A.getName()].setY(y);
+      CellCache[B.getName()].setX(i);
+      CellCache[B.getName()].setY(j);
+
+      for (auto& pairs : netCache) {
+          Net &start = pairs.second;
+          vector<Cell>Cells=start.getNeighbors();
+          Cells.push_back(start.getStartingCell());
+          auto posA = find(Cells.begin(), Cells.end(), A);
+          auto posB = find(Cells.begin(), Cells.end(), B);
+          if (posA != Cells.end()) {
+               *posA=CellCache[A.getName()];
+
+               start.setNeighbors(Cells);
+          }
+          if (posB != Cells.end()) {
+              *posB = CellCache[B.getName()];
+              start.setNeighbors(Cells);
+          }
+      }
+
 
     return new_place;
 }
@@ -186,6 +209,7 @@ int main() {
 	map<string, Cell>CellCache;
     map<string, Net>netCache;
     vector<long>counts;
+   
     
 
     
@@ -223,8 +247,8 @@ int main() {
             j++;
         }
         Cell newCell = Cell(CellName,x,y,area);
-        PlacementGrid[x][y]=newCell;
-        CellCache.emplace(CellName,&newCell);
+        PlacementGrid[x][y]= newCell;
+        CellCache[CellName] = newCell;
     }
 
     //Nets Parsing
@@ -238,7 +262,7 @@ int main() {
 
             Cell startingCell = CellCache[starterCellN];
             Net newNet = Net(startingCell, {});
-            netCache.emplace(starterCellN, &newNet);
+            netCache[starterCellN] = newNet;
 
             currentStartNode = starterCellN;
         }
@@ -251,11 +275,27 @@ int main() {
         }
         
     }
+   
     //Start of actual Algorithm and Peicing it all together
-
-    double temp = Init_temp;
+    cost1(netCache);
+    int t = 100;
+    //cost2(PlacementGrid);
+    //cost3(PlacementGrid);
+    while (t > 0) {
+        
+        //swap(PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)], PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)]);
+        vector<vector<Cell>> new_place = Perturb(PlacementGrid, numRAndC,CellCache,netCache);
+        //cost2(new_place);
+        //cost3(new_place);
+        cost1(netCache);
+        cout << "END OF ITERATION ----------------- END OF ITERATION" << endl;
+        t--;
+    }
+    ;
+   // when swapping 2 places, also change in the map the values of x and y.
+    /*double temp = Init_temp;
     while (temp > finalTemp) {
-        int size = CellCache.size();
+        int size = CellCache.size()/2;
         while (inner_loop_crit(size) == false) {
             vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC);
             long NetCost = Cost(netCache, PlacementGrid) - Cost(netCache, new_place);
@@ -265,7 +305,7 @@ int main() {
                 PlacementGrid = new_place;
         }
         Schedule(temp);
-    }
+    }*/
     
     
     

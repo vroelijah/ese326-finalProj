@@ -25,6 +25,9 @@ public:
 	void addNeighbor(Cell &neighbor) {
 		neighborCells.push_back(neighbor);
 	}
+	void setNeighbors(vector<Cell>&neighbors) {
+		this->neighborCells = neighbors;
+	}
 
 	vector<Cell> getNeighbors() {
 		return this->neighborCells;
