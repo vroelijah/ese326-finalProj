@@ -20,6 +20,7 @@ constexpr double Init_temp = 4000000;
 constexpr double finalTemp = .01;
 
 /// <summary>
+/// These Functions give a random number between the given parameters
 /// 
 /// </summary>
 /// <param name="low"></param>
@@ -36,7 +37,10 @@ double randomF(const double low, const double high) {
 }
 
 /// <summary>
-/// 
+/// This is our cost one function. It takes in our Nets map, which has every net within it.
+/// We go through every Net, get the starting node and all of its neighbors, and we 
+/// find the maximum x coordiate of all the neighbors, max y, min x, and min y,
+/// and then we calculate the maximum bounding rectangle of that net.
 /// </summary>
 /// <param name="nets"></param>
 /// <returns></returns>
@@ -66,7 +70,12 @@ long cost1(map<string,Net>& nets) {
     return totalCost;
 }
 /// <summary>
-/// 
+/// This is our cost two function, as well as our overlap function. We find overlap by first looking at two cells
+/// that are in the same row, since we are assuming that all heights are the same.If they are not in the same row, they shouldnt overlap.
+/// If they are in the same row, we divide the width by two, to account for the two directions the width can spread, and if
+/// the first cell, assuming its to the left of the second cell, had a total area to the right of its coordinates that overlaped
+/// with the total area of the second cell to the left, we found how much they overlapped by, and added it together.
+/// We divided by two so the number wasnt too large.
 /// </summary>
 /// <param name="a1"></param>
 /// <param name="a2"></param>
@@ -110,7 +119,7 @@ long cost2(vector<vector<Cell>>& PlacementGrid) {
 }
 
 ///// <summary>
-///// 
+///// For Cost three, to keep things simple, We just Subtracted the Min row cost from the max row cost, and divided by two so the number wasnt so big.
 ///// </summary>
 ///// <param name="PlacementGrid"></param>
 ///// <returns></returns>
@@ -132,7 +141,7 @@ long cost3(vector<vector<Cell>> PlacementGrid) {
 }
 
 ///// <summary>
-///// 
+///// The Cost Function just took in costs 1, 2, and 3 and added them together. We did not end up using it as we had to normalize the costs.
 ///// </summary>
 ///// <param name="nets"></param>
 ///// <param name="PlacementGrid"></param>
@@ -147,6 +156,11 @@ long Cost(map<string,Net>& nets, vector<vector<Cell>>& PlacementGrid) {
     return totalCost;
 }
 
+/// <summary>
+/// This Function just placed all of the cells in our final placement grid in into a File, which we parsed through to be able to visualize what the placement
+/// Would look like.
+/// </summary>
+/// <param name="PlacementGrid"></param>
 void VisualPlacement(vector<vector<Cell>>& PlacementGrid) {
 
     ofstream OutFile("ibm01Output.txt");
@@ -161,7 +175,9 @@ void VisualPlacement(vector<vector<Cell>>& PlacementGrid) {
     OutFile.close();
 }
 ///// <summary>
-///// 
+///// This is our Random placement Function. We swap two places on a copy of our map
+//    We then update the values of the cells that we swapped, update them in our Cell Cache
+//    and go through our nets to update the neighbors of the cells.
 ///// </summary>
 ///// <param name="Placement"></param>
 ///// <param name="numRAndC"></param>
@@ -200,7 +216,7 @@ vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC
 }
 
 /// <summary>
-/// 
+/// This is our schduleing Temo function. We pass a value in by ref to be able to be dcreased based on what value it is currently at.
 /// </summary>
 /// <param name="temp"></param>
 void Schedule(double &temp) {
@@ -247,7 +263,8 @@ int main() {
         num.replace(num.find(num), num.length(), "");
         i++;
     }
-
+    //we do our initial placement with a 2d vector that takes the square root of the number of total cells, and create a grid with width and length equal to the square root
+    // that way we always have an equal number of rows and columns
     const int numRAndC = int(ceil(sqrt(counts[3])));
     vector<vector<Cell>> PlacementGrid(numRAndC, vector<Cell>(numRAndC));
 
@@ -299,7 +316,8 @@ int main() {
     CellCacheCopy = CellCache;
     netCacheCopy = netCache;
 
-   // Start of the actual algorithm.
+   // Start of the actual algorithm. Most of it from the textboox. size is divided by a number to speed up the algoritm. We also normalized
+   //the costs by dividing by eachoher as mentioned in class.
     double temp = Init_temp;
     while (temp > finalTemp) {
         int size = CellCache.size()/2000;
@@ -309,13 +327,13 @@ int main() {
             //cout << size << endl;
             vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC,CellCacheCopy,netCacheCopy);
            //long InitialCost = Cost();
-            double initCost1(cost1(netCache)), initCost2(cost2(PlacementGrid)), initCost3(cost3(PlacementGrid));
+            double initCost1(cost1(netCache)), initCost2(cost2(PlacementGrid)), initCost3(cost3(PlacementGrid)); //
             double Cost1(cost1(netCacheCopy)), Cost2(cost2(new_place)), Cost3(cost3(new_place)), Costt(Cost(netCacheCopy, new_place));
 
             double initCost((initCost1 / initCost1) + (initCost2 / initCost2) + (initCost3 / initCost3));
             NetCost = (initCost1 / Cost1) + (initCost2 / Cost2) + (initCost3 / Cost3) ;
             deltaCost = NetCost/ initCost;
-            if (NetCost < initCost) {
+            if (deltaCost < 0) {
                 PlacementGrid = new_place;
                 netCache = netCacheCopy;
                 CellCache = CellCacheCopy;
