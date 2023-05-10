@@ -234,8 +234,8 @@ int main() {
     
 
     
-    ifstream Cellfile("ibm14.txt");
-    ifstream Netfile("ibm14nets.txt");
+    ifstream Cellfile("ibm01.txt");
+    ifstream Netfile("ibm01nets.txt");
 
     string line;
     //Parsing of all the files and creating cells
