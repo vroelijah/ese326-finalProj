@@ -320,7 +320,7 @@ int main() {
                 netCache = netCacheCopy;
                 CellCache = CellCacheCopy;
             }
-            else if (randomF(0, 99) > exp((NetCost-initCost) / temp) && temp>150) {
+            else if (randomF(0, 2) > exp((NetCost-initCost) / temp) && temp>150) {
                 PlacementGrid = new_place;
                 netCache = netCacheCopy;
                 CellCache = CellCacheCopy;
@@ -328,7 +328,7 @@ int main() {
             }
         }
         Schedule(temp);
-        cout << "Cost: " << NetCost << " , " << temp << endl;
+        
     }
     VisualPlacement(PlacementGrid);
     
