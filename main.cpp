@@ -30,6 +30,11 @@ long random(const long low, const long high) {
     return dist(gen);
 }
 
+double randomF(const double low, const double high) {
+    uniform_real_distribution<double>dist(low, high);
+    return dist(gen);
+}
+
 /// <summary>
 /// 
 /// </summary>
@@ -56,7 +61,7 @@ long cost1(map<string,Net>& nets) {
         
         totalCost += totalNetCost;
     }
-    cout << totalCost << endl;
+    //cout << totalCost << endl;
     
     return totalCost;
 }
@@ -100,8 +105,8 @@ long cost2(vector<vector<Cell>>& PlacementGrid) {
             }
         }
     }
-    cout << totalCost << endl;
-    return totalCost;
+    //cout << totalCost/2 << endl;
+    return totalCost/2;
 }
 
 ///// <summary>
@@ -122,7 +127,7 @@ long cost3(vector<vector<Cell>> PlacementGrid) {
         minRowCost = min(minRowCost, rowCost);
         totalCost3 += rowCost;
     }
-    cout << (maxRowCost - minRowCost)  << endl;
+   // cout << (maxRowCost - minRowCost)  << endl;
     return (maxRowCost - minRowCost) / 2;
 }
 
@@ -138,8 +143,22 @@ long Cost(map<string,Net>& nets, vector<vector<Cell>>& PlacementGrid) {
     totalCost += cost1(nets);
     totalCost += cost2(PlacementGrid);
     totalCost += cost3(PlacementGrid);
-    cout << totalCost;
+   // cout << totalCost;
     return totalCost;
+}
+
+void VisualPlacement(vector<vector<Cell>>& PlacementGrid) {
+
+    ofstream OutFile("ibm01Output.txt");
+
+    for (auto& list : PlacementGrid) {
+        for (auto& cell : list) {
+            OutFile << cell.getX() << " " << cell.getY() << " " << cell.getArea() << endl;
+        }
+        OutFile << endl;
+    }
+
+    OutFile.close();
 }
 ///// <summary>
 ///// 
@@ -185,12 +204,14 @@ vector<vector<Cell>> Perturb(vector<vector<Cell>>& Placement, const int numRAndC
 /// </summary>
 /// <param name="temp"></param>
 void Schedule(double &temp) {
-    if (temp >= Init_temp / 2)
+    if (temp >= Init_temp / 4)
         temp = .8 * temp;
-    else if (temp > Init_temp / 4 && temp < Init_temp / 2)
+    else if (temp > 100000 && temp < 250000)
         temp = .95 * temp;
     else
         temp = .8 * temp;
+
+    //cout << temp << endl;
 }
 bool inner_loop_crit(int &size) {
     size -= 1;
@@ -213,8 +234,8 @@ int main() {
     
 
     
-    ifstream Cellfile("ibm01.txt");
-    ifstream Netfile("ibm01nets.txt");
+    ifstream Cellfile("ibm14.txt");
+    ifstream Netfile("ibm14nets.txt");
 
     string line;
     //Parsing of all the files and creating cells
@@ -277,52 +298,43 @@ int main() {
     }
     CellCacheCopy = CellCache;
     netCacheCopy = netCache;
-    //Start of actual Algorithm and Peicing it all together
-    /*cost1(netCacheCopy);
-    cost3(PlacementGrid);
-    int t = 100;*/
-    //cost2(PlacementGrid);
-    //cost3(PlacementGrid);
-    //while (t > 0) {
-    //    
-    //    //swap(PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)], PlacementGrid[random(0, numRAndC - 1)][random(0, numRAndC - 1)]);
-    //    vector<vector<Cell>> new_place = Perturb(PlacementGrid, numRAndC,CellCacheCopy,netCacheCopy);
-    //    //cost2(new_place);
-    //    cost3(new_place);
-    //    cost1(netCacheCopy);
-    //    cout << "END OF ITERATION ----------------- END OF ITERATION" << endl;
-    //    t--;
-    //}
-    ;
-   // when swapping 2 places, also change in the map the values of x and y.
-    //ok so get initial cost 1-4
-    //then its(curcost1 / initcost1) + (curcost2 / initcost2)...
+
+   // Start of the actual algorithm.
     double temp = Init_temp;
     while (temp > finalTemp) {
-        int size = CellCache.size()/3;
+        int size = CellCache.size()/2000;
+        double NetCost;
+        double deltaCost;
         while (inner_loop_crit(size) == false) {
+            //cout << size << endl;
             vector<vector<Cell>> new_place = Perturb(PlacementGrid,numRAndC,CellCacheCopy,netCacheCopy);
            //long InitialCost = Cost();
-            long initCost1(cost1(netCache)), initCost2(cost2(PlacementGrid)), initCost3(cost3(PlacementGrid)), initCost(Cost(netCache, PlacementGrid));
-            long Cost1(cost1(netCacheCopy)), Cost2(cost2(new_place)), Cost3(cost3(new_place)), Costt(Cost(netCacheCopy, new_place));
-            long NetCost = (initCost1 / Cost1) + (initCost2 / Cost2) + (initCost3 / Cost3) ;
-            if (NetCost < 0) {
+            double initCost1(cost1(netCache)), initCost2(cost2(PlacementGrid)), initCost3(cost3(PlacementGrid));
+            double Cost1(cost1(netCacheCopy)), Cost2(cost2(new_place)), Cost3(cost3(new_place)), Costt(Cost(netCacheCopy, new_place));
+
+            double initCost((initCost1 / initCost1) + (initCost2 / initCost2) + (initCost3 / initCost3));
+            NetCost = (initCost1 / Cost1) + (initCost2 / Cost2) + (initCost3 / Cost3) ;
+            deltaCost = NetCost/ initCost;
+            if (NetCost < initCost) {
                 PlacementGrid = new_place;
                 netCache = netCacheCopy;
                 CellCache = CellCacheCopy;
             }
-            else if (random(0, 1) > exp(NetCost / temp)) {
+            else if (randomF(0, 99) > exp((NetCost-initCost) / temp) && temp>150) {
                 PlacementGrid = new_place;
                 netCache = netCacheCopy;
                 CellCache = CellCacheCopy;
+                cout << "random increase given" << endl;
             }
         }
         Schedule(temp);
+        cout << "Cost: " << NetCost << " , " << temp << endl;
     }
+    VisualPlacement(PlacementGrid);
     
     
-    
-
+    Cellfile.close();
+    Netfile.close();
     return 0;
 }
 
